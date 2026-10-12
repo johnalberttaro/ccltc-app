@@ -1,0 +1,64 @@
+{
+  "name": "CCLTC Tennis Records",
+  "short_name": "CCLTC",
+  "description": "Games, tournaments, events and announcements of the Carmen Copper Lawn Tennis Club (CCLTC).",
+  "start_url": "/?source=app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#15803d",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png?v=2",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png?v=2",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png?v=2",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Today's games",
+      "url": "/?source=app",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png?v=2",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Tournaments",
+      "url": "/tournaments",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png?v=2",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Announcements",
+      "url": "/announcements",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png?v=2",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
