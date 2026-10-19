@@ -27,7 +27,7 @@
         } catch (e) {}
     </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="stylesheet" href="{{ asset('css/theme.css') }}?v=6">
+    <link rel="stylesheet" href="{{ asset('css/theme.css') }}?v=7">
 </head>
 <body class="app-body has-footer bg-gray-100 text-gray-900 min-h-screen">
 

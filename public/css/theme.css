@@ -160,6 +160,35 @@ body.has-footer > main { flex: 1 0 auto; width: 100%; }
 .site-footer--admin h2, .site-footer--admin .site-footer__bottom-inner { color: #86efac; }
 .site-footer--admin .site-footer__inner, .site-footer--admin .site-footer__bottom-inner { max-width: 72rem; }
 
+
+/* ---------- "Install CCLTC" banner (bottom of the public pages) ---------- */
+.install-banner { position: fixed; z-index: 45; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(135deg, #15803d 0%, #166534 100%); color: #ffffff; border-radius: 1rem; padding: 1rem;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28); animation: install-up .35s ease-out; }
+@media (min-width: 640px) { .install-banner { left: auto; right: 20px; bottom: 20px; width: 22.5rem; } }
+.dark .install-banner { background: linear-gradient(135deg, #14532d 0%, #0f3b24 100%); border: 1px solid #1f6b3a; }
+.install-banner[hidden] { display: none; }
+@keyframes install-up { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+.install-banner__close { position: absolute; top: .5rem; right: .5rem; width: 2rem; height: 2rem; border: 0; border-radius: 9999px;
+    background: transparent; color: rgba(255, 255, 255, 0.8); font-size: 1.25rem; line-height: 1; cursor: pointer; }
+.install-banner__close:hover { background: rgba(255, 255, 255, 0.15); color: #ffffff; }
+.install-banner__head { display: flex; align-items: center; gap: .75rem; padding-right: 2rem; }
+.install-banner__head img { width: 3rem; height: 3rem; border-radius: .75rem; background: #ffffff; flex-shrink: 0; }
+.install-banner__title { font-weight: 700; font-size: 1rem; line-height: 1.3; }
+.install-banner__text { font-size: .875rem; color: #dcfce7; }
+.install-banner__actions { display: grid; grid-template-columns: 1.4fr 1fr; gap: .5rem; margin-top: .875rem; }
+.install-banner__primary, .install-banner__secondary { display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+    border: 0; border-radius: .75rem; padding: .65rem .75rem; font: inherit; font-weight: 600; font-size: .9rem; cursor: pointer; }
+.install-banner__primary { background: #ffffff; color: #166534; }
+.install-banner__primary:hover { background: #f0fdf4; }
+.install-banner__primary svg { width: 1rem; height: 1rem; }
+.install-banner__secondary { background: rgba(255, 255, 255, 0.16); color: #ffffff; }
+.install-banner__secondary:hover { background: rgba(255, 255, 255, 0.26); }
+.install-learn__list { display: grid; gap: .6rem; list-style: none; margin: 0; padding: 0; }
+.install-learn__list li { display: flex; gap: .6rem; align-items: flex-start; }
+.install-learn__list svg { width: 1.1rem; height: 1.1rem; color: #15803d; flex-shrink: 0; margin-top: .1rem; }
+.dark .install-learn__list svg { color: #4ade80; }
+
 /* Theme switch button icons */
 .theme-toggle .icon-sun { display: none; }
 .dark .theme-toggle .icon-sun { display: inline; }

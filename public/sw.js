@@ -1,8 +1,8 @@
 // Tennis Records service worker: makes the site installable and shows a friendly page when offline.
 // Pages always come fresh from the server (scores change often); only design files are cached.
-const VERSION = 'tr-v6';
+const VERSION = 'tr-v7';
 const OFFLINE_URL = '/offline.html';
-const PRECACHE = [OFFLINE_URL, '/css/theme.css?v=6', '/icons/icon-192.png?v=2', '/icons/icon-512.png?v=2', '/favicon.ico'];
+const PRECACHE = [OFFLINE_URL, '/css/theme.css?v=7', '/icons/icon-192.png?v=2', '/icons/icon-512.png?v=2', '/favicon.ico'];
 
 self.addEventListener('install', (event) => {
     event.waitUntil(caches.open(VERSION).then((cache) => cache.addAll(PRECACHE)).then(() => self.skipWaiting()));

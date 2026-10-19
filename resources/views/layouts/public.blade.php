@@ -204,7 +204,7 @@
     </style>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="stylesheet" href="{{ asset('css/theme.css') }}?v=6">
+    <link rel="stylesheet" href="{{ asset('css/theme.css') }}?v=7">
 </head>
 <body class="app-body has-footer bg-gray-50 text-gray-900 min-h-screen">
 
@@ -272,10 +272,6 @@
             </div>
 
             <div class="flex items-center gap-1">
-            {{-- Install as an app (shown only when the phone / browser supports it) --}}
-            <button type="button" id="install-app" hidden class="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-2.5 py-1.5 text-sm font-medium hover:bg-white/20" title="Install the app on this device">
-                <x-icon name="download" class="w-4 h-4" /> <span>Install</span>
-            </button>
             <button type="button" class="theme-toggle rounded-lg p-2 hover:bg-white/10" aria-label="Switch dark / light mode" title="Switch dark / light mode">
                 <x-icon name="moon" class="icon-moon w-5 h-5" />
                 <x-icon name="sun" class="icon-sun w-5 h-5" />
@@ -432,6 +428,46 @@
             });
         })();
     </script>
+    {{-- "Install CCLTC" card at the bottom (shown only when this phone / browser can install the app) --}}
+    <div id="install-banner" class="install-banner" hidden role="region" aria-label="Install the CCLTC app">
+        <button type="button" class="install-banner__close" data-install-dismiss aria-label="Close">&times;</button>
+        <div class="install-banner__head">
+            <img src="{{ asset('icons/icon-192.png') }}?v=2" alt="">
+            <div>
+                <p class="install-banner__title">Install CCLTC</p>
+                <p class="install-banner__text">Get the app for faster access</p>
+            </div>
+        </div>
+        <div class="install-banner__actions">
+            <button type="button" class="install-banner__primary" data-install-app><x-icon name="download" /> Install Now</button>
+            <button type="button" class="install-banner__secondary" data-install-learn>Learn More</button>
+        </div>
+    </div>
+
+    {{-- Learn More: why install --}}
+    <dialog id="install-learn" class="m-auto rounded-2xl p-0 w-[min(92vw,24rem)] shadow-2xl backdrop:bg-gray-900/50">
+        <div class="p-5 grid gap-4 text-sm">
+            <div class="flex items-center gap-3">
+                <img src="{{ asset('icons/icon-192.png') }}?v=2" alt="" class="w-12 h-12 rounded-xl">
+                <div>
+                    <p class="font-bold text-base">The CCLTC app</p>
+                    <p class="text-gray-500">Free, small, and no app store needed.</p>
+                </div>
+            </div>
+            <ul class="install-learn__list text-gray-700">
+                <li><x-icon name="check" /> <span>Opens from your <strong>home screen</strong> with one tap, like any app.</span></li>
+                <li><x-icon name="check" /> <span><strong>Faster</strong>: games, rankings and announcements load quicker.</span></li>
+                <li><x-icon name="check" /> <span><strong>Full screen</strong>, without the browser's address bar.</span></li>
+                <li><x-icon name="check" /> <span>Always up to date. There is nothing to download again.</span></li>
+                <li><x-icon name="check" /> <span>Takes almost <strong>no storage</strong>, and you can remove it anytime.</span></li>
+            </ul>
+            <div class="grid grid-cols-2 gap-2">
+                <button type="button" data-close-learn class="rounded-lg border border-gray-300 px-4 py-2.5 font-semibold hover:bg-gray-100">Close</button>
+                <button type="button" data-install-app class="rounded-lg bg-green-700 text-white font-semibold px-4 py-2.5 hover:bg-green-800">Install Now</button>
+            </div>
+        </div>
+    </dialog>
+
     {{-- iPhone / iPad: how to install (Safari has no install button of its own) --}}
     <dialog id="install-ios" class="m-auto rounded-2xl p-0 w-[min(92vw,24rem)] shadow-2xl backdrop:bg-gray-900/50">
         <div class="p-5 grid gap-3 text-sm">
@@ -451,50 +487,80 @@
         </div>
     </dialog>
 
-    {{-- Install button logic --}}
+    {{-- Install logic: bottom card, footer link, Learn More --}}
     <script>
         (function () {
-            var top = document.getElementById('install-app');
-            var buttons = [];
-            if (top) buttons.push(top);
-            document.querySelectorAll('[data-install-app]').forEach(function (b) { buttons.push(b); });
-            if (!buttons.length) return;
+            var banner = document.getElementById('install-banner');
+            var learn = document.getElementById('install-learn');
+            var iosHelp = document.getElementById('install-ios');
             var installed = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-            if (installed) return;
+            var isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            var deferred = null;
+            var available = false;
 
-            function show(visible) {
-                if (top) top.hidden = !visible;
-                document.querySelectorAll('[data-install-item]').forEach(function (li) { li.hidden = !visible; });
+            // The card stays closed for 7 days after the X is tapped
+            var HIDE_DAYS = 7;
+            function dismissedRecently() {
+                try {
+                    var t = parseInt(localStorage.getItem('installDismissedAt') || '0', 10);
+                    return t && (Date.now() - t) < HIDE_DAYS * 86400000;
+                } catch (e) { return false; }
             }
 
-            var deferred = null;
-            // Android / Chrome / Edge: the browser tells us when installing is possible
+            function show(visible) {
+                available = visible;
+                document.querySelectorAll('[data-install-item]').forEach(function (li) { li.hidden = !visible; });
+                if (!banner) return;
+                if (!visible) { banner.hidden = true; return; }
+                if (dismissedRecently()) return;
+                // Wait a moment so it does not cover the page while it loads
+                setTimeout(function () { if (available) banner.hidden = false; }, 2500);
+            }
+
+            function install() {
+                if (deferred) {
+                    deferred.prompt();
+                    deferred.userChoice.finally(function () { deferred = null; show(false); });
+                } else if (isIos && iosHelp) {
+                    iosHelp.showModal();
+                }
+            }
+
+            if (installed) return;
+
+            // Android / Chrome / Edge: the browser says when installing is possible
             window.addEventListener('beforeinstallprompt', function (e) {
                 e.preventDefault();
                 deferred = e;
                 show(true);
             });
-            window.addEventListener('appinstalled', function () { show(false); deferred = null; });
+            window.addEventListener('appinstalled', function () { deferred = null; show(false); });
 
             // iPhone / iPad (Safari): show the steps instead
-            var isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-            var dialog = document.getElementById('install-ios');
-            if (isIos && dialog) show(true);
+            if (isIos && iosHelp) show(true);
 
-            buttons.forEach(function (btn) {
+            document.querySelectorAll('[data-install-app]').forEach(function (btn) {
                 btn.addEventListener('click', function () {
-                    if (deferred) {
-                        deferred.prompt();
-                        deferred.userChoice.finally(function () { deferred = null; show(false); });
-                    } else if (isIos && dialog) {
-                        dialog.showModal();
-                    }
+                    if (learn && learn.open) learn.close();
+                    install();
                 });
             });
-            if (dialog) {
-                dialog.querySelector('[data-close-install]').addEventListener('click', function () { dialog.close(); });
-                dialog.addEventListener('click', function (e) { if (e.target === dialog) dialog.close(); });
-            }
+            document.querySelectorAll('[data-install-learn]').forEach(function (btn) {
+                btn.addEventListener('click', function () { if (learn) learn.showModal(); });
+            });
+            document.querySelectorAll('[data-install-dismiss]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    banner.hidden = true;
+                    try { localStorage.setItem('installDismissedAt', String(Date.now())); } catch (e) {}
+                });
+            });
+
+            [learn, iosHelp].forEach(function (d) {
+                if (!d) return;
+                d.addEventListener('click', function (e) { if (e.target === d) d.close(); });
+            });
+            if (learn) learn.querySelector('[data-close-learn]').addEventListener('click', function () { learn.close(); });
+            if (iosHelp) iosHelp.querySelector('[data-close-install]').addEventListener('click', function () { iosHelp.close(); });
         })();
     </script>
     {{-- App (PWA): register the service worker (needs https; skipped on plain http except localhost) --}}
