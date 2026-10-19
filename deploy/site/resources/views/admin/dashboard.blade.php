@@ -131,7 +131,10 @@
 
             {{-- Earlier games --}}
             <section>
-                <h2 class="text-lg font-bold mb-3">Earlier Games</h2>
+                <div class="flex items-center justify-between gap-2 mb-3">
+                    <h2 class="text-lg font-bold">Earlier Games</h2>
+                    <a href="{{ route('admin.games.index', ['date' => today()->subDay()->toDateString()]) }}" class="text-sm text-green-700 hover:underline">All games (any date) &rarr;</a>
+                </div>
                 @if ($recent->isEmpty())
                     <p class="bg-white rounded-xl shadow p-4 text-gray-500 text-sm">No earlier games yet.</p>
                 @else

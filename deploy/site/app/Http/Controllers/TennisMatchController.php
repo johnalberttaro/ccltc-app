@@ -10,6 +10,32 @@ use Illuminate\Validation\ValidationException;
 
 class TennisMatchController extends Controller
 {
+    // Admin: all games of one date (any date), with Edit / Delete
+    public function index(Request $request)
+    {
+        try {
+            $date = $request->filled('date') ? \Illuminate\Support\Carbon::parse($request->query('date'))->startOfDay() : today();
+        } catch (\Throwable $e) {
+            $date = today();
+        }
+
+        $matches = TennisMatch::with(['players', 'sets'])
+            ->whereDate('match_date', $date->toDateString())
+            ->orderBy('start_time')
+            ->orderBy('id')
+            ->get();
+
+        // The most recent days that have games, as quick links
+        $days = TennisMatch::query()
+            ->selectRaw('DATE(match_date) as day, COUNT(*) as total')
+            ->groupByRaw('DATE(match_date)')
+            ->orderByDesc('day')
+            ->limit(21)
+            ->get();
+
+        return view('admin.games.index', compact('date', 'matches', 'days'));
+    }
+
     // Admin: record match form
     public function create()
     {
@@ -54,7 +80,12 @@ class TennisMatchController extends Controller
             $prefill['sets'][$i] = ['p1' => $set->side1_games, 'p2' => $set->side2_games, 'tb' => $tb];
         }
 
-        return view('admin.matches.create', ['players' => $this->suggestions(), 'match' => $match, 'prefill' => $prefill]);
+        return view('admin.matches.create', [
+            'players' => $this->suggestions(),
+            'match' => $match,
+            'prefill' => $prefill,
+            'returnTo' => request('return') === 'games' ? 'games' : null,
+        ]);
     }
 
     // Save a new match
@@ -74,8 +105,12 @@ class TennisMatchController extends Controller
     {
         $match = $this->save($request, $match);
 
-        return redirect()
-            ->route('admin.dashboard')
+        // Opened from "All Games": go back to that page, on the game's (possibly new) date
+        $to = $request->input('return_to') === 'games'
+            ? redirect()->route('admin.games.index', ['date' => $match->match_date->toDateString()])
+            : redirect()->route('admin.dashboard');
+
+        return $to
             ->with('success', $match->isTie()
                 ? 'Match updated: draw (' . $match->sideName(1) . ' drew with ' . $match->sideName(2) . ').'
                 : 'Match updated: ' . $match->winnerName() . ' won.');

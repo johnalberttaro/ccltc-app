@@ -10,9 +10,15 @@
 
 @section('content')
     @if ($match)
-        <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center gap-1 text-sm text-gray-600 hover:underline mb-2">
-            <x-icon name="arrow-left" class="w-4 h-4" /> Back to dashboard
-        </a>
+        @if (! empty($returnTo))
+            <a href="{{ route('admin.games.index', ['date' => $match->match_date->toDateString()]) }}" class="inline-flex items-center gap-1 text-sm text-gray-600 hover:underline mb-2">
+                <x-icon name="arrow-left" class="w-4 h-4" /> Back to all games
+            </a>
+        @else
+            <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center gap-1 text-sm text-gray-600 hover:underline mb-2">
+                <x-icon name="arrow-left" class="w-4 h-4" /> Back to dashboard
+            </a>
+        @endif
     @endif
     <h1 class="text-2xl font-bold mb-4">{{ $match ? 'Edit Match' : 'Record Match' }}</h1>
     @if ($match)
@@ -22,6 +28,7 @@
         <form method="POST" action="{{ $match ? route('admin.matches.update', $match) : route('admin.matches.store') }}" class="bg-white rounded-xl shadow p-4 grid gap-5">
             @csrf
             @if ($match) @method('PUT') @endif
+            @if (! empty($returnTo)) <input type="hidden" name="return_to" value="{{ $returnTo }}"> @endif
 
             @if ($errors->any())
                 <div class="rounded-lg bg-red-100 text-red-800 px-4 py-3 text-sm">

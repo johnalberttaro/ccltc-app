@@ -53,6 +53,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/backup', [BackupController::class, 'download'])->name('backup');
 
         // Match recording
+        Route::get('/games', [TennisMatchController::class, 'index'])->name('games.index');
         Route::get('/matches/create', [TennisMatchController::class, 'create'])->name('matches.create');
         Route::post('/matches', [TennisMatchController::class, 'store'])->name('matches.store');
         Route::get('/matches/{match}/edit', [TennisMatchController::class, 'edit'])->name('matches.edit');

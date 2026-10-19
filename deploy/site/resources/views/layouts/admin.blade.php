@@ -149,6 +149,7 @@
                     @foreach ($adminLinks as $link)
                         <li><a href="{{ route($link['route']) }}"><x-icon :name="$link['icon']" /> {{ $link['label'] }}</a></li>
                     @endforeach
+                    <li><a href="{{ route('admin.games.index') }}"><x-icon name="list" /> All games (any date)</a></li>
                 </ul>
             </div>
 
